@@ -3,7 +3,7 @@
 
 Developers:
 * Name: Alex Glesser - CWID: 884991639 - Email: alexglesser@csu.fullerton.edu
-* Name:
+* Name: Eli Thomas - CWID: 884951617 - Email: 23thomasec@csu.fullerton.edu
 * Name: 
 * Name:
 * Name:
