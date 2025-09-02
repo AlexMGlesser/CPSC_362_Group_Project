@@ -36,4 +36,12 @@ Developers:
 
 ===================================================
 
-This software was written by ___________________ in Fall 2025 at California State University, Fullerton. 
+This software was written by ___________________ in Fall 2025 at California State University, Fullerton.
+All code written was written by these students unless otherwise specified. 
+
+Additional Sources of Code:
+* 
+* 
+* 
+* 
+*
