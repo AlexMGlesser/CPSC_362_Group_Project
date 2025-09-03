@@ -34,17 +34,12 @@ Developers:
 
 
 
-===================================================
+# Notice
 
-This software was written by ___________________ in Fall 2025 at California State University, Fullerton.
-All code written was written by these students unless otherwise specified. 
+This software was written by Alex Glesser, Eli Thomas, Luis Salgado and Burhan Taskin in Fall 2025 at California State University, Fullerton.
+All code written was written by these students unless otherwise specified. The software is not to be redistributed.
 
 CPSC 120 Style Guide (MShafae).pdf was not created by us and we do not own this style guide. We take no credit for its use.
 CPSC 120 Style Guide (MShafae) was based on Kevin Wortman’s October 7, 2019 "Style Guide (for early CPSC 120)"
 
-Additional Sources of Code:
-* 
-* 
-* 
-* 
-*
+# Additional Sources of Code:
