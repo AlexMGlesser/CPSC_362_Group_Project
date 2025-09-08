@@ -9,7 +9,8 @@
 /*=========================================
 Class: Game
 Constructor
-Input: name, description, genres, achievements, completion status, finished achievements status, hours played
+Input: string name, string description, vector<string> genres, vector<pair<string, bool>> achievements
+, bool completion status, bool finished achievements status, float hours played
 Output: none
 Status: Prototyped
 TODO: Implement
