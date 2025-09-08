@@ -6,7 +6,10 @@
 
 /*=========================================
 Class: Game
-
+Variables string name, string description, vector<string> genres, vector<pair<string, bool>> achievements
+, bool completion status, bool finished achievements status, float hours played
+Status: Prototyped
+TODO: Implement
 =========================================*/
 
 class Game {
