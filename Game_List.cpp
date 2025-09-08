@@ -1,17 +1,15 @@
-#include "Game.h"
-#include <string>
 #include <iostream>
-#include <vector>
-
+#include "Game_List.h"
 
 
 
 /*=========================================
-Class: Game
+Class: Game_List
 
 =========================================*/
 
-Game::Game() {
+Game_List::Game_List() {
+
 
 
 }
