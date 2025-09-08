@@ -8,10 +8,12 @@
 
 /*=========================================
 Class: Game
-
+Constructor
+Input: name, description, genres, achievements, completion status, finished achievements status, hours played
+Output: none
+Status: Prototyped
+TODO: Implement
 =========================================*/
-
-
 Game::Game(std::string cname,
            std::string cdescription,
            std::vector<std::string> cgenres,
