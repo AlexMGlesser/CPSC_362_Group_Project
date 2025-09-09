@@ -7,8 +7,9 @@ Developers:
 * Name: Eli Thomas - Email: 23thomasec@csu.fullerton.edu
 * 
 * Name: Luis Salgado - Email: lesalgado@csu.fullerton.edu
+*
 * Name:
-* Name:
+
 
 
 # Project Description:
