@@ -4,17 +4,6 @@
 #include <vector>
 
 
-
-
-/*=========================================
-Class: Game
-Constructor
-Input: string name, string description, vector<string> genres, vector<pair<string, bool>> achievements
-, bool completion status, bool finished achievements status, float hours played
-Output: none
-Status: Prototyped
-TODO: Implement
-=========================================*/
 Game::Game(std::string cname,
            std::string cdescription,
            std::vector<std::string> cgenres,

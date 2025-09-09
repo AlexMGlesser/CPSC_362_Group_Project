@@ -11,27 +11,6 @@ Developers:
 * Name:
 
 
-# Notes for the Devs
-Let's make sure that the code is well organized and documented. Every function should be in this form: 
-(C++ example: For other languages just swap syntax but keep structure)
-
-```
-/* ==========================================================
-Function Name: 
-Inputs: [Parameter description and type]
-Outputs: [Output description and type]
-Function description
-Status: Functional/Nonfunctional (is it working yet or not)
-TODO: Any TODO information here. If none, emmit line
-============================================================ */ 
-int function(descriptive_variable, descriptive_variable, descriptive_variable) {
-    // program here
-    return output;
-}
-```
-
-After a new function is added. Add the description and purpose into the explanation document.
-
 # Project Description:
 
 
