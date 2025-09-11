@@ -9,6 +9,13 @@
 class Game_List {
     public:
 
+        //Constructor
+        Game_List(int gameCount, std::string accountName, std::map<std::string, Game> gameList);
+
+        //Destructor
+        ~Game_List();
+
+
         // Getters
         int getGameCount() { return game_count };
         std::string getAccountName() { return account_name };
@@ -21,7 +28,7 @@ class Game_List {
 
 
     private:
-    
+
         std::string account_name;
         int game_count;
         std::map<std::string, Game> game_list;
