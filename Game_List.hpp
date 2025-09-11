@@ -9,13 +9,22 @@
 class Game_List {
     public:
 
+        // Getters
+        int getGameCount() { return game_count };
+        std::string getAccountName() { return account_name };
+        std::map<std::string, Game> getGameList() { return game_list };
 
+        //Setters
+        void setGameCount(int new_count) { game_count = new_count };
+        void setAccountName(std::string new_name) { account_name = new_name };
+        void setGameList(std::map<std::string, Game> new_game_list) { game_list = new_game_list };
 
 
     private:
+    
         std::string account_name;
         int game_count;
-        std::unordered_map<std::string, Game>;
+        std::map<std::string, Game> game_list;
 
 
 }
