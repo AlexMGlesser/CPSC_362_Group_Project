@@ -9,6 +9,9 @@
 class Game_List {
     public:
 
+	// test comment by Luis
+
+
         //Constructor
         Game_List(int gameCount, std::string accountName, std::map<std::string, Game> gameList);
 
