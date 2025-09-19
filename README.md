@@ -1,7 +1,5 @@
 ==================
 # CPSC 362 Group Project
-test
-test - 2
 Developers:
 * Name: Alex Glesser - Email: alexglesser@csu.fullerton.edu
 * 
