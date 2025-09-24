@@ -1,7 +1,7 @@
 import json, requests
 
 BASE = "https://api.steampowered.com"
-API_KEY = "7A1CB2369762358123995B31703363C5"
+API_KEY = "SECRET"
 
 
 def get_owned_games(steamid: int):
