@@ -1,8 +1,11 @@
 import json, requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE = "https://api.steampowered.com"
-API_KEY = "7A1CB2369762358123995B31703363C5"
-
+API_KEY = os.getenv("API_KEY")
 
 def get_owned_games(steamid: int):
     url = f"{BASE}//IPlayerService/GetOwnedGames/v0001/"
@@ -23,9 +26,6 @@ def get_recently_played_games(steamid: int, count: int = 5):
         "input_json": json.dumps(payload)
     }
     return requests.get(url, params=params).json()
-
-if __name__ == "__main__":
-    print(get_recently_played_games(76561198258366170))
 
 
     
