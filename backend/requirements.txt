@@ -1,2 +1,4 @@
 SQLAlchemy
 dotenv
+fastapi
+psycopg2-binary
