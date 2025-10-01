@@ -1,21 +1,28 @@
-from fastapi import FastAPI, Depends
-from database import get_db, engine
-from sqlalchemy.orm import Session
-from typing import Annotated
+from fastapi import FastAPI, HTTPException
+from supabase import create_client, Client
 import os
 from dotenv import load_dotenv
-import models
 
 load_dotenv()
 
-API_KEY = os.getenv("API_KEY")
+url = os.getenv("SUPABASE_URL")
+key = os.getenv("SUPABASE_KEY")
+
+supabase = create_client(url, key)
+
 app = FastAPI()
 
-db_dependency = Annotated[Session, Depends(get_db)]
-models.Base.metadata.create_all(bind=engine)
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Supabase FastAPI app"}
 
-if __name__ == "__main__":
+@app.get("/items")
+def get_items():
+    try:
+        response = supabase.table("test-me").select("*").execute()
+        return response.data
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-    string="firoaeojtetijthisisatest"
 
-    testttt = models.Test(text=string)
