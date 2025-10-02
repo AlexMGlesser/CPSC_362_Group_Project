@@ -7,7 +7,7 @@ Developers:
 * 
 * Name: Luis Salgado - Email: lesalgado@csu.fullerton.edu
 *
-* Name:
+* Name: Burhan Taskin - Email: ibrahimtaskin@csu.fullerton.edu
 
 
 
