@@ -1,21 +1,58 @@
-from fastapi import FastAPI, Depends
-from database import get_db, engine
-from sqlalchemy.orm import Session
-from typing import Annotated
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from supabase import create_client, Client
 import os
 from dotenv import load_dotenv
-import models
-
+from passlib.context import CryptContext
 load_dotenv()
 
-API_KEY = os.getenv("API_KEY")
+url = os.getenv("SUPABASE_URL")
+key = os.getenv("SUPABASE_KEY")
+
+supabase = create_client(url, key)
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+
 app = FastAPI()
 
-db_dependency = Annotated[Session, Depends(get_db)]
-models.Base.metadata.create_all(bind=engine)
+class SignUpBase(BaseModel):
+    username: str
+    password: str
+    email: str | None=None
 
-if __name__ == "__main__":
+class SignUpOut(BaseModel):
+    id: int
+    username: str
+    email: str | None=None
+    password: str
+    created_at: str
+    steam_id: int | None=None
 
-    string="firoaeojtetijthisisatest"
 
-    testttt = models.Test(text=string)
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Supabase FastAPI app"}
+
+@app.post("/sign_up", response_model=SignUpOut)
+def create_account(account: SignUpBase):
+    try:
+        hashed_password = get_password_hash(account.password)
+
+        account_data = {
+            "username": account.username,
+            "email": account.email,
+            "password": hashed_password
+        }
+        
+        response = supabase.table("account").insert(account_data).execute()
+
+        if response.data:
+            return response.data[0]
+        else:
+            raise HTTPException(status_code=400, detail="Could not create account.")
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+def get_password_hash(password: str):
+    hashed_password = pwd_context.hash(password)
+    return hashed_password
