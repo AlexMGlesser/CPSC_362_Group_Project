@@ -27,6 +27,13 @@ class SignUpOut(BaseModel):
     created_at: str
     steam_id: int | None=None
 
+class SignInBase(BaseModel):
+    username: str
+    password: str
+
+class SignInOut(BaseModel):
+    id: int
+    username: str
 
 @app.get("/")
 def read_root():
@@ -56,3 +63,17 @@ def create_account(account: SignUpBase):
 def get_password_hash(password: str):
     hashed_password = pwd_context.hash(password)
     return hashed_password
+
+@app.post("/sign_in", response_model=SignInOut)
+def login_for_token(account: SignInBase):
+    try:
+        response = {}
+        if response.data:
+            return response.data[0]
+        else:
+            raise HTTPException(status_code=400, detail="Could not create account.")
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+        
+
