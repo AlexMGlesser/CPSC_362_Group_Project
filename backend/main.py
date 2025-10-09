@@ -23,7 +23,6 @@ class SignUpOut(BaseModel):
     id: int
     username: str
     email: str | None=None
-    password: str
     created_at: str
     steam_id: int | None=None
 
@@ -47,13 +46,16 @@ def create_account(account: SignUpBase):
         account_data = {
             "username": account.username,
             "email": account.email,
-            "password": hashed_password
+            "password" : hashed_password
         }
         
         response = supabase.table("account").insert(account_data).execute()
 
         if response.data:
-            return response.data[0]
+            user_data = response.data[0]
+            return {"id": user_data["id"], "username": user_data["username"],
+                    "email" : user_data["email"], "created_at": user_data["created_at"],
+                    "steam_id": user_data["steam_id"]}
         else:
             raise HTTPException(status_code=400, detail="Could not create account.")
         
@@ -64,14 +66,20 @@ def get_password_hash(password: str):
     hashed_password = pwd_context.hash(password)
     return hashed_password
 
+def verify_password(plain_password: str, hashed_password: str):
+    return pwd_context.verify(plain_password, hashed_password)
+
 @app.post("/sign_in", response_model=SignInOut)
 def login_for_token(account: SignInBase):
     try:
-        response = {}
-        if response.data:
-            return response.data[0]
-        else:
-            raise HTTPException(status_code=400, detail="Could not create account.")
+        response = supabase.table("account").select("*").eq("username", account.username).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="User not found.")
+        user_data = response.data[0]
+        if not verify_password(account.password, user_data["password"]):
+            raise HTTPException(status_code=401, detail="Incorrect username or password.")
+        
+        return {"id": user_data["id"], "username": user_data["username"]}
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
