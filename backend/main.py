@@ -1,16 +1,14 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
-from supabase import create_client, Client
+from database import supabase
 import os
 from dotenv import load_dotenv
 from passlib.context import CryptContext
+from auth import (get_password_hash, verify_password, create_access_token,
+                  ACCESS_TOKEN_EXPIRE_MINUTES, timedelta, Token,
+                  get_current_active_user)
 load_dotenv()
-
-url = os.getenv("SUPABASE_URL")
-key = os.getenv("SUPABASE_KEY")
-
-supabase = create_client(url, key)
-pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 app = FastAPI()
 
@@ -34,6 +32,7 @@ class SignInOut(BaseModel):
     id: int
     username: str
 
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Supabase FastAPI app"}
@@ -46,42 +45,40 @@ def create_account(account: SignUpBase):
         account_data = {
             "username": account.username,
             "email": account.email,
-            "password" : hashed_password
+            "password_hash" : hashed_password
         }
         
-        response = supabase.table("account").insert(account_data).execute()
+        response = supabase.table("users").insert(account_data).execute()
 
         if response.data:
             user_data = response.data[0]
-            return {"id": user_data["id"], "username": user_data["username"],
-                    "email" : user_data["email"], "created_at": user_data["created_at"],
-                    "steam_id": user_data["steam_id"]}
+            return {"id": user_data["user_id"], "username": user_data["username"], "password": hashed_password,
+                    "email" : user_data["email"], "created_at": user_data["created_at"]}
         else:
             raise HTTPException(status_code=400, detail="Could not create account.")
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def get_password_hash(password: str):
-    hashed_password = pwd_context.hash(password)
-    return hashed_password
-
-def verify_password(plain_password: str, hashed_password: str):
-    return pwd_context.verify(plain_password, hashed_password)
-
-@app.post("/sign_in", response_model=SignInOut)
-def login_for_token(account: SignInBase):
+@app.post("/token", response_model=Token)
+def login_for_token(account: OAuth2PasswordRequestForm = Depends()):
     try:
-        response = supabase.table("account").select("*").eq("username", account.username).execute()
+        response = supabase.table("users").select("*").eq("username", account.username).execute()
         if not response.data:
             raise HTTPException(status_code=404, detail="User not found.")
         user_data = response.data[0]
-        if not verify_password(account.password, user_data["password"]):
+        if not verify_password(account.password, user_data["password_hash"]):
             raise HTTPException(status_code=401, detail="Incorrect username or password.")
         
-        return {"id": user_data["id"], "username": user_data["username"]}
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        token = create_access_token(data={"sub" : str(user_data["user_id"])}, expires_delta=access_token_expires)
+        return {"access_token" : token, "token_type" : "bearer"}
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/link")
+def link_steam_id(current_user: dict = Depends(get_current_active_user)):
+    return current_user
         
 
