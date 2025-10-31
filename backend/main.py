@@ -81,4 +81,3 @@ def login_for_token(account: OAuth2PasswordRequestForm = Depends()):
 def link_steam_id(current_user: dict = Depends(get_current_active_user)):
     return current_user
         
-
