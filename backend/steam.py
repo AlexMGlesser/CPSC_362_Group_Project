@@ -19,11 +19,10 @@ def get_owned_games(steamid: int):
 
 def get_recently_played_games(steamid: int, count: int = 5):
     url = f"{BASE}/IPlayerService/GetRecentlyPlayedGames/v0001/"
-    payload = {"steamid" : steamid}
     params = {
         "key": API_KEY,
-        "format": "json",
-        "input_json": json.dumps(payload)
+        "steamid": steamid,
+        "count": count
     }
     return requests.get(url, params=params).json()
 
@@ -37,7 +36,14 @@ def get_game_achievements(steamid: int, appid: int):
     }
     return requests.get(url, params=params).json()
 
-print(get_game_achievements(76561198258366170, 2807960))
-
+def get_steam_account_info(steamid: int):
+    url = f"{BASE}/ISteamUser/GetPlayerSummaries/v0002/"
+    params = {
+        "key": API_KEY,
+        "format": "json",
+        "steamids": steamid
+    }
+    return requests.get(url, params=params).json()
     
+# print(get_steam_account_info(76561198258366170))
 

@@ -8,7 +8,10 @@ from passlib.context import CryptContext
 from auth import (get_password_hash, verify_password, create_access_token,
                   ACCESS_TOKEN_EXPIRE_MINUTES, timedelta, Token,
                   get_current_active_user)
+from steam import get_steam_account_info
+
 load_dotenv()
+
 
 app = FastAPI()
 
@@ -78,11 +81,33 @@ def login_for_token(account: OAuth2PasswordRequestForm = Depends()):
         raise HTTPException(status_code=500, detail=str(e))
     
 @app.post("/link")
-def link_steam_id(current_user: dict = Depends(get_current_active_user)):
+def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_user)):
     try:
-        response = supabase.table("users").select("*").eq("username", current_user.username).execute()
+        # Unlink Steam Account if no steamid is given
+        if steamid is -1:
+            supabase.table("steam_account").delete().eq("user_id", current_user["user_id"]).execute()
+            return {"message": "Steam account successfully unlinked.", "user_id": current_user["user_id"]}
+        
+        steam_info = get_steam_account_info(steamid)["response"]["players"][0]
+        public = 0
+        try:
+            name = steam_info["realname"]
+            if name:
+                public = 1
+        except:
+            pass
+
+        response = {
+            "steam_id" : steamid,
+            "user_id": current_user["user_id"],
+            "steam_name": steam_info["personaname"],
+            "profile_visibility": public
+        }
+
+        supabase.table("steam_account").insert(response).execute()
+
+        return response
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    return response.data[0]
         
