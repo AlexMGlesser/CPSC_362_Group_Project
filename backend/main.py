@@ -79,5 +79,10 @@ def login_for_token(account: OAuth2PasswordRequestForm = Depends()):
     
 @app.post("/link")
 def link_steam_id(current_user: dict = Depends(get_current_active_user)):
-    return current_user
+    try:
+        response = supabase.table("users").select("*").eq("username", current_user.username).execute()
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return response.data[0]
         
