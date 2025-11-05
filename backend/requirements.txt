@@ -7,3 +7,4 @@ argon2-cffi
 SQLAlchemy
 python-dotenv
 psycopg2-binary
+requests
