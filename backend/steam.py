@@ -85,12 +85,8 @@ def get_all_steam_game_stats(steamid: int, api_key: Optional[str] = None,
 
 
 if __name__ == "__main__":
-    STEAMID = 76561198258366170
+    STEAMID = os.getenv("STEAM_ID")
     all_games = get_all_steam_game_stats(STEAMID)
     for g in all_games:
-        print(f"{g['name']} — {g['playtime_hours']}h — {g['achievements_unlocked']}/{g['achievements_total']} achievements")
-
-
-
-    
+        print(f"{g['appid']} — {g['name']} — {g['playtime_hours']}h — {g['achievements_unlocked']}/{g['achievements_total']} achievements")
 
