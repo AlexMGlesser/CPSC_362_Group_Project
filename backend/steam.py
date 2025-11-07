@@ -83,9 +83,18 @@ def get_all_steam_game_stats(steamid: int, api_key: Optional[str] = None,
     results.sort(key=lambda r: r["name"].lower())
     return results
 
+def get_steam_account_info(steamid: int):
+    url = f"{BASE}/ISteamUser/GetPlayerSummaries/v0002/"
+    params = {
+        "key": API_KEY,
+        "format": "json",
+        "steamids": steamid
+    }
+    return requests.get(url, params=params).json()
 
 if __name__ == "__main__":
     STEAMID = os.getenv("STEAM_ID")
+    print(STEAMID)
     all_games = get_all_steam_game_stats(STEAMID)
     for g in all_games:
         print(f"{g['appid']} — {g['name']} — {g['playtime_hours']}h — {g['achievements_unlocked']}/{g['achievements_total']} achievements")
