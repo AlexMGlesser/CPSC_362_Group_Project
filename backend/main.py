@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 from auth import (get_password_hash, verify_password, create_access_token,
                   ACCESS_TOKEN_EXPIRE_MINUTES, timedelta, Token,
                   get_current_active_user)
-from steam import get_steam_account_info
+from steam import get_steam_account_info, get_all_steam_game_stats
 
 load_dotenv()
 
@@ -84,9 +84,11 @@ def login_for_token(account: OAuth2PasswordRequestForm = Depends()):
 def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_user)):
     try:
         # Unlink Steam Account if no steamid is given
-        if steamid is -1:
+        if steamid == -1:
             supabase.table("steam_account").delete().eq("user_id", current_user["user_id"]).execute()
             return {"message": "Steam account successfully unlinked.", "user_id": current_user["user_id"]}
+        
+        user_id = current_user["user_id"]
         
         steam_info = get_steam_account_info(steamid)["response"]["players"][0]
         public = 0
@@ -97,17 +99,58 @@ def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_
         except:
             pass
 
-        response = {
+        account_info = {
             "steam_id" : steamid,
-            "user_id": current_user["user_id"],
+            "user_id": user_id,
             "steam_name": steam_info["personaname"],
             "profile_visibility": public
         }
 
-        supabase.table("steam_account").insert(response).execute()
+        supabase.table("steam_account").upsert(account_info, on_conflict="user_id").execute()
+        supabase.table("library_entry").delete().eq("steam_id", steamid).execute()
 
-        return response
+        steam_games_list = get_all_steam_game_stats(steamid)
+        if not steam_games_list:
+            return {
+                "message": "Steam account linked, but no games were found. Profile may be private.",
+                "account_info": account_info
+            }
+        
+        games_for_central_table = [
+            {"id": g["appid"], "name": g["name"]} for g in steam_games_list
+        ]
+
+        if games_for_central_table:
+            print(f"Upserting {len(games_for_central_table)} games into central 'game' table...")
+            # We use upsert with ignore_duplicates=True.
+            # This inserts new games and ignores any that already exist based on the 'appid' primary key.
+            # Assumes 'appid' is the primary key or a unique constraint on 'game' table.
+            supabase.table("game").upsert(
+                games_for_central_table,
+                on_conflict="id",
+                ignore_duplicates=True
+            ).execute()
+        
+        library_entries_to_insert = []
+        for game in steam_games_list:
+            entry_data = {
+                'steam_id': steamid,
+                'game_id': game['appid'], # This links to the 'game' table
+                'playtime_total_minutes': game['playtime_minutes'],
+                'blacklist_game' : True
+            }
+            library_entries_to_insert.append(entry_data)
+
+        if library_entries_to_insert:
+            supabase.table("library_entry").insert(library_entries_to_insert).execute()
+
+        return {
+            "message": "Steam account linked and games populated successfully.",
+            "account_info": account_info,
+            "games_added": len(library_entries_to_insert)
+        }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-        
+
+
