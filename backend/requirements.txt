@@ -8,3 +8,7 @@ SQLAlchemy
 python-dotenv
 psycopg2-binary
 requests
+
+# NPM MUST BE INSTALLED FOR VITE FRONTEND
+# To run backend, navigate to backend directory and run: uvicorn main:app --reload
+# To run frontend, navigate to frontend directory and run: npm run dev
