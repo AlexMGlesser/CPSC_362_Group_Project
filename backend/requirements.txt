@@ -12,3 +12,7 @@ requests
 # NPM MUST BE INSTALLED FOR VITE FRONTEND
 # To run backend, navigate to backend directory and run: uvicorn main:app --reload
 # To run frontend, navigate to frontend directory and run: npm run dev
+
+# BE SURE TO HAVE A .env file in the frontend/ directory, and in the root directory.
+# the .env file in the frontend should have this: VITE_API_BASE=http://localhost:8000
+# and the .env file in the root should have the stuff posted in the discord (pinned)
