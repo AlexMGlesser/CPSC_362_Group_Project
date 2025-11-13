@@ -88,8 +88,6 @@ def login_for_token(account: OAuth2PasswordRequestForm = Depends()):
         f.write("Attempting to log in...\n")
     try:
         response = supabase.table("users").select("*").eq("username", account.username).execute()
-        with open("log.txt", "a") as f:
-            f.write("response = " + response + "\n")
         if not response.data:
             with open("log.txt", "a") as f:
                 f.write("Exception raised: status_code 404; User not found\n")
@@ -102,10 +100,6 @@ def login_for_token(account: OAuth2PasswordRequestForm = Depends()):
         
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         token = create_access_token(data={"sub" : str(user_data["user_id"])}, expires_delta=access_token_expires)
-        with open("log.txt", "a") as f:
-            f.write("access_token_expires = " + access_token_expires + "\n")
-        with open("log.txt", "a") as f:
-            f.write("token = " + token + "\n")
         return {"access_token" : token, "token_type" : "bearer"}
         
     except Exception as e:
@@ -130,9 +124,6 @@ def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_
         user_id = current_user["user_id"]
         
         steam_info = get_steam_account_info(steamid)["response"]["players"][0]
-        with open("log.txt", "a") as f:
-            f.write("user_id = " + user_id + "\n")
-            f.write("steam_info = " + steam_info + "\n")
         public = 0
         try:
             with open("log.txt", "a") as f:
@@ -153,8 +144,6 @@ def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_
             "steam_name": steam_info["personaname"],
             "profile_visibility": public
         }
-        with open("log.txt", "a") as f:
-            f.write("account_info = " + account_info + "\n")
 
         supabase.table("steam_account").upsert(account_info, on_conflict="user_id").execute()
         supabase.table("library_entry").delete().eq("steam_id", steamid).execute()
@@ -163,7 +152,6 @@ def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_
         if not steam_games_list:
             with open("log.txt", "a") as f:
                 f.write("Steam account linked, but no games were found\n")
-                f.write("account_info = " + account_info + "\n")
             return {
                 "message": "Steam account linked, but no games were found. Profile may be private.",
                 "account_info": account_info
