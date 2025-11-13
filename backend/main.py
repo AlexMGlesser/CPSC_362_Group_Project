@@ -47,10 +47,14 @@ class SignInOut(BaseModel):
 
 @app.get("/")
 def read_root():
+    with open("log.txt", "a") as f:
+        f.write("Sent Message: Welcome to the Supabase FastAPI app.\n")
     return {"message": "Welcome to the Supabase FastAPI app"}
 
 @app.post("/sign_up", response_model=SignUpOut)
 def create_account(account: SignUpBase):
+    with open("log.txt", "a") as f:
+        f.write("Trying to create account...\n")
     try:
         hashed_password = get_password_hash(account.password)
 
@@ -64,48 +68,83 @@ def create_account(account: SignUpBase):
 
         if response.data:
             user_data = response.data[0]
+            with open("log.txt", "a") as f:
+                f.write("Succesfully created account - Returning now\n")
             return {"id": user_data["user_id"], "username": user_data["username"], "password": hashed_password,
                     "email" : user_data["email"], "created_at": user_data["created_at"]}
         else:
+            with open("log.txt", "a") as f:
+                f.write("Exception raised: status_code = 400; Could not create account\n")
             raise HTTPException(status_code=400, detail="Could not create account.")
         
     except Exception as e:
+        with open("log.txt", "a") as f:
+            f.write("Exception raised: status_code = 500;\n")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/token", response_model=Token)
 def login_for_token(account: OAuth2PasswordRequestForm = Depends()):
+    with open("log.txt", "a") as f:
+        f.write("Attempting to log in...\n")
     try:
         response = supabase.table("users").select("*").eq("username", account.username).execute()
+        with open("log.txt", "a") as f:
+            f.write("response = " + response + "\n")
         if not response.data:
+            with open("log.txt", "a") as f:
+                f.write("Exception raised: status_code 404; User not found\n")
             raise HTTPException(status_code=404, detail="User not found.")
         user_data = response.data[0]
         if not verify_password(account.password, user_data["password_hash"]):
+            with open("log.txt", "a") as f:
+                f.write("Exception raised: status_code = 401; Incorrect username or password\n")
             raise HTTPException(status_code=401, detail="Incorrect username or password.")
         
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         token = create_access_token(data={"sub" : str(user_data["user_id"])}, expires_delta=access_token_expires)
+        with open("log.txt", "a") as f:
+            f.write("access_token_expires = " + access_token_expires + "\n")
+        with open("log.txt", "a") as f:
+            f.write("token = " + token + "\n")
         return {"access_token" : token, "token_type" : "bearer"}
         
     except Exception as e:
+        with open("log.txt", "a") as f:
+            f.write("Exception raised: status_code = 500\n")
         raise HTTPException(status_code=500, detail=str(e))
     
 @app.post("/link")
 def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_user)):
+    with open("log.txt", "a") as f:
+        f.write("Linking steamid...\n")
     try:
         # Unlink Steam Account if no steamid is given
         if steamid == -1:
+            with open("log.txt", "a") as f:
+                f.write("Unlinking steam account since no steamid was given\n")
             supabase.table("steam_account").delete().eq("user_id", current_user["user_id"]).execute()
+            with open("log.txt", "a") as f:
+                f.write("Successfully unlinked\n")
             return {"message": "Steam account successfully unlinked.", "user_id": current_user["user_id"]}
         
         user_id = current_user["user_id"]
         
         steam_info = get_steam_account_info(steamid)["response"]["players"][0]
+        with open("log.txt", "a") as f:
+            f.write("user_id = " + user_id + "\n")
+            f.write("steam_info = " + steam_info + "\n")
         public = 0
         try:
+            with open("log.txt", "a") as f:
+                f.write("Attempting to get steam_info realname to see if account is private...\n")
             name = steam_info["realname"]
             if name:
+                with open("log.txt", "a") as f:
+                    f.write("Account is real\n")
                 public = 1
         except:
+            with open("log.txt", "a") as f:
+                f.write("Exception raised: passed\n")
             pass
 
         account_info = {
@@ -114,12 +153,17 @@ def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_
             "steam_name": steam_info["personaname"],
             "profile_visibility": public
         }
+        with open("log.txt", "a") as f:
+            f.write("account_info = " + account_info + "\n")
 
         supabase.table("steam_account").upsert(account_info, on_conflict="user_id").execute()
         supabase.table("library_entry").delete().eq("steam_id", steamid).execute()
 
         steam_games_list = get_all_steam_game_stats(steamid)
         if not steam_games_list:
+            with open("log.txt", "a") as f:
+                f.write("Steam account linked, but no games were found\n")
+                f.write("account_info = " + account_info + "\n")
             return {
                 "message": "Steam account linked, but no games were found. Profile may be private.",
                 "account_info": account_info
@@ -130,6 +174,8 @@ def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_
         ]
 
         if games_for_central_table:
+            with open("log.txt", "a") as f:
+                f.write("Upserting games into central game table\n")
             print(f"Upserting {len(games_for_central_table)} games into central 'game' table...")
             # We use upsert with ignore_duplicates=True.
             # This inserts new games and ignores any that already exist based on the 'appid' primary key.
@@ -140,6 +186,8 @@ def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_
                 ignore_duplicates=True
             ).execute()
         
+        with open("log.txt", "a") as f:
+            f.write("Adding information to steam_games_list entry_data structure\n")
         library_entries_to_insert = []
         for game in steam_games_list:
             entry_data = {
@@ -152,7 +200,8 @@ def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_
 
         if library_entries_to_insert:
             supabase.table("library_entry").insert(library_entries_to_insert).execute()
-
+        with open("log.txt", "a") as f:
+            f.write("returning steam account info\n")
         return {
             "message": "Steam account linked and games populated successfully.",
             "account_info": account_info,
@@ -160,6 +209,8 @@ def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_
         }
         
     except Exception as e:
+        with open("log.txt", "a") as f:
+            f.write("Exception raised: status_code = 500\n")
         raise HTTPException(status_code=500, detail=str(e))
 
 
