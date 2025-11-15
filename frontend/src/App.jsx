@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import { login } from './api.js';
-import { DataConsentPopup } from './App';
 
 function App() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    const today = new Date();
+    const day = today.getDate();
+
+    if (day > 10 && day % 2 === 0) {
+      console.log('Day is even and greater than 15');
+    }
+  }, []);
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
@@ -27,7 +35,6 @@ function App() {
 
   return (
     <>
-      <DataConsentPopup />
       <form onSubmit={handleLogin}>
         <label>Username: 
             <input value={username} onChange={handleUsernameChange}/>
@@ -45,7 +52,7 @@ function App() {
 export { App };
 
 // luis-feature: Added code to display player stats
-import { useEffect, useState } from 'react';
+//import { useState, useEffect } from 'react';
 
 function PlayerStats({ playerId }) {
   const [playerStats, setPlayerStats] = useState(null);
@@ -79,41 +86,3 @@ function PlayerStats({ playerId }) {
 
 export default PlayerStats;
 // luis-feature: End of added code
-
-// luis-feature: Added popup for data consent on even days after the 15th
-import { useEffect, useState } from 'react';
-
-function DataConsentPopup() {
-  const [showConsentPopup, setShowConsentPopup] = useState(false);
-
-  useEffect(() => {
-    const today = new Date();
-    const day = today.getDate();
-
-    if (day > 15 && day % 2 === 0) {
-      setShowConsentPopup(true);
-    }
-  }, []);
-
-  const handleConsent = (consent) => {
-    setShowConsentPopup(false);
-    if (consent) {
-      console.log('Player consented to data storage.');
-    } else {
-      console.log('Player did not consent to data storage.');
-    }
-  };
-
-  if (!showConsentPopup) return null;
-
-  return (
-    <div className="popup">
-      <p>Do you still consent to your data being stored for analytics?</p>
-      <button onClick={() => handleConsent(true)}>Yes</button>
-      <button onClick={() => handleConsent(false)}>No</button>
-    </div>
-  );
-}
-
-export { DataConsentPopup };
-// luis-feature: End of added popup
