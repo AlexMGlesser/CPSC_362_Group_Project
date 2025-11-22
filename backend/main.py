@@ -169,7 +169,7 @@ def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_
                 'steam_id': steamid,
                 'game_id': game['appid'], # This links to the 'game' table
                 'playtime_total_minutes': game['playtime_minutes'],
-                'blacklist_game' : True
+                'blacklist_game' : False
             }
             library_entries_to_insert.append(entry_data)
 
@@ -202,9 +202,14 @@ async def get_random_game(current_user: dict = Depends(get_current_active_user))
 
         if not steam_games.data:
              raise HTTPException(status_code=404, detail="No games found in library.")
+        
+        valid_games = [game for game in steam_games.data if game["blacklist_game"] == False]
 
-
-        steam_game = choice(steam_games.data)
+        if not valid_games:
+            raise HTTPException(status_code=404, detail="All games in library are blacklisted.")
+        
+        steam_game = choice(valid_games)
+        
         steam_game_info = supabase.table("game").select("*").eq("id", steam_game["game_id"]).execute()
 
         return steam_game | steam_game_info.data[0]
