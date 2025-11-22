@@ -10,6 +10,7 @@ from auth import (get_password_hash, verify_password, create_access_token,
                   ACCESS_TOKEN_EXPIRE_MINUTES, timedelta, Token,
                   get_current_active_user)
 from steam import get_steam_account_info, get_all_steam_game_stats
+from random import randint
 
 load_dotenv()
 
@@ -185,3 +186,32 @@ def link_steam_id(steamid: int, current_user: dict = Depends(get_current_active_
         log("Exception raised: status_code = 500\n")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.get('/home')
+async def get_random_game(current_user: dict = Depends(get_current_active_user)):
+    try:
+        user_id = current_user["user_id"]
+        response = supabase.table("steam_account").select("steam_id").eq("user_id", user_id).execute()
+
+        if response.data:
+            steam_id = response.data[0]['steam_id'] 
+        else:
+            raise KeyError(f"No Steam account linked.")
+
+        steam_games =  supabase.table("library_entry").select("*").eq("steam_id", steam_id).execute()
+        num_games = len(steam_games.data)
+
+        if num_games == 0:
+            raise ValueError(f"No games found.")
+
+        rand_id = randint(0, num_games)
+
+        steam_game = steam_games.data[rand_id]
+        steam_game_info = supabase.table("game").select("*").eq("id", steam_game["game_id"]).execute()
+
+        return steam_game | steam_game_info.data[0]
+
+
+    except Exception as e: 
+        log("Exception raised: status_code = 500\n")
+        raise HTTPException(status_code=500, detail=str(e))
