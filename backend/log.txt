@@ -26,3 +26,11 @@ Account is public.
 Upserting games into central game table
 Adding information to steam_games_list entry_data structure
 returning steam account info
+Attempting to log in...
+Attempting to log in...
+Attempting to log in...
+Exception raised: status_code = 500
+Exception raised: status_code = 500
+Exception raised: status_code = 500
+Exception raised: status_code = 500
+Exception raised: status_code = 500

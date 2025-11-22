@@ -10,7 +10,7 @@ from auth import (get_password_hash, verify_password, create_access_token,
                   ACCESS_TOKEN_EXPIRE_MINUTES, timedelta, Token,
                   get_current_active_user)
 from steam import get_steam_account_info, get_all_steam_game_stats
-from random import randint
+from random import choice
 
 load_dotenv()
 
@@ -196,17 +196,15 @@ async def get_random_game(current_user: dict = Depends(get_current_active_user))
         if response.data:
             steam_id = response.data[0]['steam_id'] 
         else:
-            raise KeyError(f"No Steam account linked.")
+            raise HTTPException(status_code=404, detail="No Steam account linked.")
 
         steam_games =  supabase.table("library_entry").select("*").eq("steam_id", steam_id).execute()
-        num_games = len(steam_games.data)
 
-        if num_games == 0:
-            raise ValueError(f"No games found.")
+        if not steam_games.data:
+             raise HTTPException(status_code=404, detail="No games found in library.")
 
-        rand_id = randint(0, num_games)
 
-        steam_game = steam_games.data[rand_id]
+        steam_game = choice(steam_games.data)
         steam_game_info = supabase.table("game").select("*").eq("id", steam_game["game_id"]).execute()
 
         return steam_game | steam_game_info.data[0]
@@ -215,3 +213,42 @@ async def get_random_game(current_user: dict = Depends(get_current_active_user))
     except Exception as e: 
         log("Exception raised: status_code = 500\n")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/home")
+async def toggle_blacklist(app_name: str = None, app_id: int = None , current_user: dict = Depends(get_current_active_user)):
+    try:
+        user_id = current_user["user_id"]
+        response = supabase.table("steam_account").select("steam_id").eq("user_id", user_id).execute()
+
+        if response.data:
+                steam_id = response.data[0]['steam_id'] 
+        else:
+            raise KeyError(f"No Steam account linked.")
+
+        if not app_id and app_name:
+            game_lookup = supabase.table("game").select("id").ilike("name", f"{app_name}%").execute()
+            if game_lookup.data:
+                app_id = game_lookup.data[0]['id']
+            else:
+                raise HTTPException(status_code=400, detail="App name not found in library.")
+
+
+        if not app_id:
+            raise HTTPException(status_code=400, detail="No app identifier or name provided.")
+        
+        library_entry = supabase.table("library_entry").select("blacklist_game").eq("steam_id", steam_id).eq("game_id", app_id).execute()
+
+        if not library_entry.data:
+            raise HTTPException(status_code=404, detail="Game not found in user library.")
+        
+        curr_blacklist = library_entry.data[0].get('blacklist_game', False)
+        new_status = not curr_blacklist
+        
+        response = supabase.table("library_entry").update({"blacklist_game": new_status}).eq("steam_id", steam_id).eq("game_id", app_id).execute()
+
+        return {"message": "Game blacklisted status toggled", "data": response.data}
+
+    except Exception as e: 
+        log("Exception raised: status_code = 500\n")
+        raise HTTPException(status_code=500, detail=str(e))
+    
