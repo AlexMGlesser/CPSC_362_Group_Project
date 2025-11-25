@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import AuthPanel from "./components/AuthPanel";
 import SteamLinkPanel from "./components/SteamLinkPanel";
 import RandomGamePanel from "./components/RandomGamePanel.jsx";
+import MyGamesPanel from "./components/MyGamesPanel.jsx";
 import { getStoredToken, clearToken } from "./api";
 
 function App() {
@@ -57,7 +58,10 @@ function App() {
           <div className="card card-game">
             <RandomGamePanel token={token} showMessage={showMessage} />
           </div>
+
+          <MyGamesPanel style={{width : ""}} token={token} showMessage={showMessage} />
         </section>
+        
       </main>
 
       {toast && (
@@ -65,6 +69,8 @@ function App() {
           <span>{toast}</span>
         </div>
       )}
+
+
 
       <footer className="app-footer">
         <span>Backend: FastAPI + Supabase · Frontend: React + Vite</span>
