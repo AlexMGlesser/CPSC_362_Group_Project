@@ -1,48 +1,76 @@
-import { useState } from 'react'
-import './App.css'
-import { login } from './api.js'
+import React, { useEffect, useState } from "react";
+import AuthPanel from "./components/AuthPanel";
+import SteamLinkPanel from "./components/SteamLinkPanel";
+import RandomGamePanel from "./components/RandomGamePanel.jsx";
+import { getStoredToken, clearToken } from "./api";
 
 function App() {
-  // Javascript can be written here for functions.
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  
+  const [token, setToken] = useState(getStoredToken());
+  const [toast, setToast] = useState(null);
 
-  const handleUsernameChange = (e) => {
-    setUsername(e.target.value);
-  }
+  const handleLogin = (newToken) => {
+    setToken(newToken);
+    setToast("Logged in successfully.");
+  };
 
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-  }
+  const handleLogout = () => {
+    clearToken();
+    setToken(null);
+    setToast("Logged out.");
+  };
 
-  const handleLogin = async (e) => {
-    e.preventDefault(); 
-    try {
-      const loginData = await login(username, password);
-      
-      console.log('Login successful:', loginData);
-      // We need to add token to localStorage still
-    } catch (error) {
-      console.error('Login failed:', error);
-    }
-  }
+  const showMessage = (msg) => {
+    setToast(msg);
+  };
 
-  // Write any HTML inside the return function. Syntax differs slightly, just refer to JSX documentation for reference.
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(id);
+  }, [toast]);
+
   return (
-    <>
-      <form onSubmit={handleLogin}>
-        <label>Username: 
-            <input value={username} onChange={handleUsernameChange}/>
-        </label>
-        <label>Password: 
-          <input value={password} onChange={handlePasswordChange}/>
-        </label>
-        <button type="submit">Login</button>
-      </form>
-      
-    </>
-  )
+    <div className="app-root">
+      <div className="background-gradient" />
+      <header className="app-header">
+        <h1 className="app-title">Steam Game Picker</h1>
+        <p className="app-subtitle">
+          Link your Steam account and let the app pick a random game from your library.
+        </p>
+      </header>
+
+      <main className="app-main">
+        <section className="grid-layout">
+          <div className="card card-auth">
+            <AuthPanel
+              token={token}
+              onLogin={handleLogin}
+              onLogout={handleLogout}
+              showMessage={showMessage}
+            />
+          </div>
+
+          <div className="card card-steam">
+            <SteamLinkPanel token={token} showMessage={showMessage} />
+          </div>
+
+          <div className="card card-game">
+            <RandomGamePanel token={token} showMessage={showMessage} />
+          </div>
+        </section>
+      </main>
+
+      {toast && (
+        <div className="toast">
+          <span>{toast}</span>
+        </div>
+      )}
+
+      <footer className="app-footer">
+        <span>Backend: FastAPI + Supabase · Frontend: React + Vite</span>
+      </footer>
+    </div>
+  );
 }
 
-export default App
+export default App;
