@@ -95,3 +95,18 @@ export async function blacklistGame(token, appId) {
 
   return handleResponse(res, "Failed to toggle blacklist.");
 }
+
+export async function getLoadedGames(token, appId) {
+  if (!token) throw new Error("Not authenticated.");
+  if (!appId) throw new Error("Missing game id.");
+
+
+  const res = await fetch(`${API_BASE}/home?app_id=${appId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return handleResponse(res, "Failed to get all loaded games.");
+}
