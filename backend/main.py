@@ -257,3 +257,34 @@ async def toggle_blacklist(app_name: str = None, app_id: int = None , current_us
         log("Exception raised: status_code = 500\n")
         raise HTTPException(status_code=500, detail=str(e))
     
+@app.get("/games")
+async def get_loaded_games(current_user: dict = Depends(get_current_active_user)):
+    try:
+        user_id = current_user["user_id"]
+        response = supabase.table("steam_account").select("steam_id").eq("user_id", user_id).execute()
+
+        if response.data:
+                steam_id = response.data[0]['steam_id'] 
+        else:
+            raise KeyError(f"No Steam account linked.")
+
+        steam_games =  supabase.table("library_entry").select("*").eq("steam_id", steam_id).execute().data
+
+        if not steam_games:
+            raise HTTPException(status_code=404, detail="No games found in library.")
+        
+        game_ids = [game['game_id'] for game in steam_games]
+        game_details_response = supabase.table("game").select("*").in_("id", game_ids).execute()
+        game_details_dict = {g['id']: g for g in game_details_response.data}
+    
+        results = []
+        for entry in steam_games:
+            g_id = entry['game_id']
+            if g_id in game_details_dict:
+                combined_data = entry | game_details_dict[g_id]
+                results.append(combined_data)
+        
+        return results
+    except Exception as e: 
+        log("Exception raised: status_code = 500\n")
+        raise HTTPException(status_code=500, detail=str(e))
