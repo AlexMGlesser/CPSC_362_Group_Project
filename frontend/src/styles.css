@@ -337,6 +337,26 @@ body {
   z-index: 20;
 }
 
+/* Library Card */
+
+.library-unloaded {
+  height: 150px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  background: rgba(0,0,0,0.2);
+}
+
+@media (min-width: 960px) {
+  .card-library {
+    grid-column: 1 / -1;
+  }
+}
+
 /* Footer */
 
 .app-footer {
