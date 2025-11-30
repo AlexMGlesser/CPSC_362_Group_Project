@@ -44,6 +44,9 @@ def get_all_steam_game_stats(steamid: int, api_key: Optional[str] = None,
         playtime_minutes = g.get("playtime_forever", 0)
         playtime_hours = round(playtime_minutes / 60.0, 2)
 
+        img_icon_hash = g.get("img_icon_url", "")
+        img_logo_hash = g.get("img_logo_url", "")
+
         achievements_unlocked = 0
         achievements_total = 0
 
@@ -73,6 +76,8 @@ def get_all_steam_game_stats(steamid: int, api_key: Optional[str] = None,
             "name": name,
             "playtime_minutes": playtime_minutes,
             "playtime_hours": playtime_hours,
+            "img_icon_url": img_icon_hash,
+            "img_logo_url": img_logo_hash,
             "achievements_unlocked": achievements_unlocked,
             "achievements_total": achievements_total,
         })

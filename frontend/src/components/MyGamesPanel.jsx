@@ -72,7 +72,7 @@ function MyGamesPanel({ token, showMessage }) {
 
         
         {myGames.map((game) => (
-            <div className="game-card" key={game.id}>
+            <div className={`game-card ${game.blacklist_game ? 'blacklisted' : ''}`} key={game.id}>
               <h3 className="game-title">{game.name}</h3>
               <p className="game-meta">
                   App ID: <span>{game.id}</span>
@@ -84,7 +84,7 @@ function MyGamesPanel({ token, showMessage }) {
                   Blacklisted: {" "}
                   <span>{game.blacklist_game ? "Yes" : "No"}</span>
               </p>
-              <button className="btn btn-secondary btn-full" onClick={() => handleBlacklist(game.id)} title="Remove from random selection">
+              <button className="btn btn-secondary btn-full" onClick={async () => {await handleBlacklist(game.id); handleGetLibrary();}} title="Remove from random selection">
                 Blacklist
               </button>
             </div>
